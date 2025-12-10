@@ -68,3 +68,27 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+
+
+This React application provides:
+
+Dual Functionality: Toggle between Sign In and Sign Up modes
+
+Role-Based Forms:
+
+Exporters use IEC Number for sign up
+
+QA Inspectors and Admins use username
+
+Demo Credentials: Clickable demo cards to auto-fill credentials
+
+Responsive Design: Works on all device sizes
+
+Visual Feedback: Active states for selected roles/demo credentials
+
+Informative Side Panel: Explains the portal's purpose and features
+
+Form Validation: Basic validation for password matching
+
+
