@@ -7,6 +7,8 @@ function App() {
   const [formData, setFormData] = useState({
     username: '',
     iecNumber: '',
+    email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
     role: 'exporter'
@@ -31,20 +33,39 @@ function App() {
       }
       console.log('Sign up data:', formData);
       alert(`${formData.role.charAt(0).toUpperCase() + formData.role.slice(1)} account created successfully!`);
+    
+      // Reset form after successful signup
+      setFormData({
+        username: '',
+        iecNumber: '',
+        email: '',
+        phone: '',
+        password: '',
+        confirmPassword: '',
+        role: 'exporter'
+      });
+    
     } else {
       // Sign in logic
       console.log('Sign in data:', { 
         username: formData.username, 
         password: formData.password 
       });
-      alert(`Welcome back, ${formData.username}!`);
+      alert(`Welcome back, ${formData.username || formData.email}!`);
+
+      // Reset form after successful signin
+      setFormData(prev => ({
+        ...prev,
+        password: '',
+        confirmPassword: ''
+      }));
     }
   };
 
   const demoCredentials = {
-    exporter: { username: 'greenvalley', password: 'exp123' },
-    qaInspector: { username: 'rajesh', password: 'qa123' },
-    admin: { username: 'admin', password: 'admin123' }
+    exporter: { username: 'greenvalley', email: 'greenvalley@agri.com', password: 'exp123' },
+    qaInspector: { username: 'rajesh', email: 'rajesh@qa.com', password: 'qa123' },
+    admin: { username: 'admin', email: 'admin@agriportal.com', password: 'admin123' }
   };
 
   const fillDemoCredentials = (role) => {
@@ -52,15 +73,17 @@ function App() {
     setFormData(prev => ({
       ...prev,
       username: credentials.username,
-      password: credentials.password
+      email: credentials.email,
+      password: credentials.password,
+      role: role
     }));
     setActiveRole(role);
   };
 
   const roles = [
-    { id: 'exporter', label: 'Exporter' },
-    { id: 'qaInspector', label: 'QA Inspector' },
-    { id: 'admin', label: 'Admin' }
+    { id: 'exporter', label: 'Exporter', icon: '🚜' },
+    { id: 'qaInspector', label: 'QA Inspector', icon: '🔍' },
+    { id: 'admin', label: 'Admin', icon: '👨‍💼' }
   ];
 
   return (
@@ -83,12 +106,14 @@ function App() {
               <button
                 className={`toggle-btn ${!isSignUp ? 'active' : ''}`}
                 onClick={() => setIsSignUp(false)}
+                type="button"
               >
                 Sign In
               </button>
               <button
                 className={`toggle-btn ${isSignUp ? 'active' : ''}`}
                 onClick={() => setIsSignUp(true)}
+                type="button"
               >
                 Sign Up
               </button>
@@ -100,7 +125,7 @@ function App() {
               
               {isSignUp && (
                 <div className="role-selection">
-                  <label>Select Role</label>
+                  <label>Select Your Role</label>
                   <div className="role-buttons">
                     {roles.map(role => (
                       <button
@@ -112,19 +137,20 @@ function App() {
                           setActiveRole(role.id);
                         }}
                       >
-                        {role.label}
+                        <span className="role-icon">{role.icon}</span>
+                        <span className="role-label">{role.label}</span>
                       </button>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Username / IEC Number Field */}
+              {/* Username Field */}
               <div className="form-group">
                 <label htmlFor="username">
                   {isSignUp && formData.role === 'exporter' 
                     ? 'IEC Number' 
-                    : 'Username / IEC Number'}
+                    : 'Username / Email'}
                 </label>
                 <input
                   type="text"
@@ -133,13 +159,48 @@ function App() {
                   placeholder={
                     isSignUp && formData.role === 'exporter'
                       ? "Enter IEC number"
-                      : "Enter username"
+                      : "Enter username or email"
                   }
                   value={formData.username}
                   onChange={handleInputChange}
                   required
                 />
               </div>
+
+              {/* Email Address Field */}
+              <div className="form-group">
+                <label htmlFor="email">Email Address</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="Enter your email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              {/* Phone Number Field (Sign Up only) */}
+              {isSignUp && (
+                <div className="form-group">
+                  <label htmlFor="phone">Phone Number</label>
+                  <div className="phone-input">
+                    <span className="country-code">+91</span>
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      placeholder="Enter your phone number"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      pattern="[0-9]{10}"
+                      required
+                    />
+                  </div>
+                  <small className="input-hint">Enter 10-digit mobile number</small>
+                </div>
+              )}
 
               {/* Password Field */}
               <div className="form-group">
@@ -148,11 +209,15 @@ function App() {
                   type="password"
                   id="password"
                   name="password"
-                  placeholder="Enter password"
+                  placeholder="Enter your password"
                   value={formData.password}
                   onChange={handleInputChange}
                   required
+                  minLength="6"
                 />
+                {isSignUp && (
+                  <small className="input-hint">Minimum 6 characters</small>
+                )}
               </div>
 
               {/* Confirm Password (Sign Up only) */}
@@ -163,10 +228,11 @@ function App() {
                     type="password"
                     id="confirmPassword"
                     name="confirmPassword"
-                    placeholder="Confirm your password"
+                    placeholder="Re-enter your password"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     required
+                    minLength="6"
                   />
                 </div>
               )}
@@ -176,7 +242,7 @@ function App() {
                 {isSignUp ? 'Create Account' : 'Login'}
               </button>
 
-              {/* Demo Credentials Section */}
+              {/* Demo Credentials Section - Sign In only */}
               {!isSignUp && (
                 <div className="demo-section">
                   <h3>Demo Credentials:</h3>
@@ -185,32 +251,50 @@ function App() {
                       className={`demo-card ${activeRole === 'exporter' ? 'active' : ''}`}
                       onClick={() => fillDemoCredentials('exporter')}
                     >
-                      <h4>Exporter</h4>
-                      <p>greenvalley / exp123</p>
+                      <div className="demo-icon">🚜</div>
+                      <div className="demo-info">
+                        <h4>Exporter</h4>
+                        <p className="demo-cred">greenvalley / exp123</p>
+                        <p className="demo-email">greenvalley@agri.com</p>
+                      </div>
                     </div>
                     <div 
                       className={`demo-card ${activeRole === 'qaInspector' ? 'active' : ''}`}
                       onClick={() => fillDemoCredentials('qaInspector')}
                     >
-                      <h4>QA Inspector</h4>
-                      <p>rajesh / qa123</p>
+                      <div className="demo-icon">🔍</div>
+                      <div className="demo-info">
+                        <h4>QA Inspector</h4>
+                        <p className="demo-cred">rajesh / qa123</p>
+                        <p className="demo-email">rajesh@qa.com</p>
+                      </div>
                     </div>
                     <div 
                       className={`demo-card ${activeRole === 'admin' ? 'active' : ''}`}
                       onClick={() => fillDemoCredentials('admin')}
                     >
-                      <h4>Admin</h4>
-                      <p>admin / admin123</p>
+                      <div className="demo-icon">👨‍💼</div>
+                      <div className="demo-info">
+                        <h4>Admin</h4>
+                        <p className="demo-cred">admin / admin123</p>
+                        <p className="demo-email">admin@agriportal.com</p>
+                      </div>
                     </div>
                   </div>
+                  <p className="demo-hint">Click any card to auto-fill credentials</p>
                 </div>
               )}
+
+              {/* Divider */}
+              <div className="divider">
+                <span>or</span>
+              </div>
 
               {/* Toggle Link */}
               <p className="toggle-link">
                 {isSignUp ? 'Already have an account?' : "Don't have an account?"}
                 <button type="button" onClick={() => setIsSignUp(!isSignUp)}>
-                  {isSignUp ? 'Sign In' : 'Sign Up'}
+                  {isSignUp ? 'Sign In here' : 'Sign Up here'}
                 </button>
               </p>
             </form>
@@ -228,25 +312,68 @@ function App() {
               
               <h3>🔒 Secure Features</h3>
               <ul>
-                <li>Digital certification with blockchain technology</li>
-                <li>Real-time quality tracking</li>
+                <li>Secure Digital Certification</li>
+                <li>Real-time Quality Tracking</li>
                 <li>Secure data encryption</li>
-                <li>Multi-role access control</li>
+                <li>Export Compliance Management</li>
+                <li>Multi-User Access Control</li>
+                <li>Blockchain Verification</li>
+                <li>Mobile Responsive</li>
               </ul>
 
-              <h3>📋 IEC Number</h3>
+              <h3>📋 Required for Sign Up</h3>
               <p>
                 For exporters, your Import Export Code (IEC) serves as your username. 
                 This ensures unique identification and compliance with trade regulations.
               </p>
+              <div className="requirements">
+                <div className="requirement-item">
+                  <span className="req-icon">✓</span>
+                  <span>Valid Email Address</span>
+                </div>
+                <div className="requirement-item">
+                  <span className="req-icon">✓</span>
+                  <span>Indian Mobile Number</span>
+                </div>
+                <div className="requirement-item">
+                  <span className="req-icon">✓</span>
+                  <span>Secure Password (6+ chars)</span>
+                </div>
+                {formData.role === 'exporter' && (
+                  <div className="requirement-item">
+                    <span className="req-icon">✓</span>
+                    <span>IEC Number (for Exporters)</span>
+                  </div>
+                )}
+              </div>
+
+              <h3>🔒 Security Notice</h3>
+              <p className="security-notice">
+                All credentials are encrypted. Never share your password with anyone.
+                The portal uses industry-standard SSL encryption for all data transfers.
+              </p>
+
+              <div className="contact-support">
+                <h3>📞 Need Help?</h3>
+                <p>Contact support: <strong>1800-AGR-PORTAL</strong></p>
+                <p>Email: <strong>support@agriquality.gov.in</strong></p>
+              </div>
             </div>
           </div>
         </main>
 
         {/* Footer */}
         <footer className="footer">
-          <p>© 2024 Agricultural Quality Check Portal. All rights reserved.</p>
-          <p>Secure Digital Certification System v2.0</p>
+          <div className="footer-content">
+            <p>© 2024 Agricultural Quality Check Portal. All rights reserved.</p>
+            <div className="footer-links">
+              <a href="#privacy">Privacy Policy</a>
+              <a href="#terms">Terms of Service</a>
+              <a href="#faq">FAQ</a>
+              <a href="#contact">Contact Us</a>
+            </div>
+            <p className="version">Secure Digital Certification System v3.1</p>
+          </div>
         </footer>
       </div>
     </div>
